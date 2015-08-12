@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using Test2.Models;
 
 namespace Test2.Controllers
 {
@@ -11,7 +12,7 @@ namespace Test2.Controllers
         [HttpGet]
         public ViewResult Compute(string x = "0")
         {
-            int result = 0;
+            int result = Expression.Compute(x);
             return View(result);
         }
     }
