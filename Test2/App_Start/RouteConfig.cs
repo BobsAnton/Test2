@@ -15,8 +15,14 @@ namespace Test2
 
             routes.MapRoute(
                 name: "Default",
-                url: "{controller}/{action}/{id}",
-                defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional }
+                url: "{action}/{x}",
+                defaults: new { controller = "Home", x = UrlParameter.Optional }
+            );
+
+            routes.MapRoute(
+                name: "Empty",
+                url: "{x}",
+                defaults: new { controller = "Home", action = "Compute", x = UrlParameter.Optional }
             );
         }
     }
