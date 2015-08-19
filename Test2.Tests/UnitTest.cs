@@ -32,5 +32,13 @@ namespace Test2.Tests
             ViewResult result = controller.Compute("-2+300");
             Assert.AreEqual(298, result.Model); 
         }
+
+        [TestMethod]
+        public void TestTrigonometricFunc()
+        {
+            HomeController controller = new HomeController();
+            ViewResult result = controller.Compute("cos pi + pi");
+            Assert.AreEqual(2.14, result.Model); 
+        }
     }
 }
