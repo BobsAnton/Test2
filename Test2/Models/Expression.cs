@@ -96,6 +96,8 @@ namespace Test2.Models
             // Перебираем все части строки (скобки, операции, числа).
             foreach (var c in Separate(expression))
             {
+                if (c == " ")
+                    continue;
                 if (operators.Contains(c))
                 {
                     if (stack.Count > 0 && !c.Equals("("))
