@@ -89,6 +89,10 @@ namespace Test2.Models
 
         private static IEnumerable<string> ToRPN(string expression)
         {
+            if (expression.Length != 0 && expression[0] == '-')
+                expression = "0" + expression;
+            expression = expression.Replace("(-", "(0-");
+
             // Необходимо создать очередь строк (ОПЗ).
             var RPN = new List<string>();
             var stack = new Stack<string>();
