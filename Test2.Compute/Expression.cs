@@ -4,7 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Globalization;
 
-namespace Test2.Models
+namespace Test2.Compute
 {
     public static class Expression
     {
@@ -16,7 +16,7 @@ namespace Test2.Models
             {
                 // Перевод в обратную польскую запись.
                 var queue = new Queue<string>(ToRPN(expression));
-                
+
                 if (queue.Count == 1)
                     return double.Parse(queue.First(), CultureInfo.GetCultureInfo("Ru-ru"));
 
@@ -179,7 +179,7 @@ namespace Test2.Models
                             s += expression[j];
                     else
                         for (var j = i + 1; j < expression.Length && !operators.Contains(expression[j].ToString()); j++)
-                        {         
+                        {
                             s += expression[j];
                             if (j != expression.Length - 1 && expression[j + 1] == '(')
                             {
@@ -192,15 +192,15 @@ namespace Test2.Models
                                         break;
                                 }
                                 break;
-                            }                              
-                        }              
+                            }
+                        }
                 }
 
                 // Передвигаем позицию в строке.
                 i += s.Length;
 
                 if (s != " " && s.Length != 0 && Char.IsLetter(s.Trim()[0]))
-                    s = ComputeTrigFunc(s);             
+                    s = ComputeTrigFunc(s);
 
                 // Возвращаем текущую часть строки.
                 yield return s;
@@ -215,7 +215,7 @@ namespace Test2.Models
                 s = s.Trim().Remove(0, 3);
                 if (s.Length > 2 && s[0] == '(' && s[s.Length - 1] == ')')
                     s = s.Substring(1, s.Length - 2);
-                    
+
                 double result = Compute(s);
                 return string.Format(CultureInfo.GetCultureInfo("Ru-ru"), "{0:0.##}", Math.Cos(result));
             }
@@ -260,7 +260,7 @@ namespace Test2.Models
             return s;
         }
 
-        private static byte Priority(string s)      
+        private static byte Priority(string s)
         {
             // Получение приоритета операции.
             switch (s)
