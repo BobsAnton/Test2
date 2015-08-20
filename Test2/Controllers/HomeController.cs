@@ -12,7 +12,21 @@ namespace Test2.Controllers
         [HttpGet]
         public ViewResult Compute(string x = "0")
         {
-            double result = Expression.Compute(x);
+            double result;
+            Exception e = Expression.Check(x);
+            if (e == null)
+                result = Expression.Compute(x);
+            else
+            {
+                if (e is BadBracketsException)
+                    ModelState.AddModelError("x", e.Message);
+                if (e is BadOperationsException)
+                    ModelState.AddModelError("x", e.Message);
+                if (e is BadExpressionException)
+                    ModelState.AddModelError("x", e.Message);
+                result = 0;
+            }
+                
             return View(result);
         }
     }

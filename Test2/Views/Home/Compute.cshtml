@@ -6,8 +6,9 @@
 
 <h2>@Model</h2>
 
-@using(Html.BeginForm("Compute", "Home", FormMethod.Get))
+@using (Html.BeginForm("Compute", "Home", FormMethod.Get))
 {
     <b>X = </b>@Html.TextBox("x")
     <button type="submit">Submit</button>
+    @Html.ValidationSummary()
 }

@@ -10,85 +10,117 @@ namespace Test2.Compute
     {
         private static List<string> operators = new List<string>(new string[] { "(", ")", "+", "-", "*", "/" });
 
-        public static double Compute(string expression)
+        public static Exception Check(string expression)
         {
+            // Проверка скобок.
+            int i = 0;
+            foreach (var c in expression)
+            {
+                if (c == '(')
+                    i++;
+                else if (c == ')')
+                    i--;
+            }
+            if (i != 0)
+                return new BadBracketsException();
+
+            // Поверка знаков.
+            bool inRow = false;
+            foreach (var c in expression)
+            {
+                if (c == '+' || c == '-' || c == '*' || c == '/')
+                    if (!inRow)
+                        inRow = true;
+                    else
+                        return new BadOperationsException();
+                else
+                    inRow = false;
+            }
+
+            // Поверка выражения.
             try
             {
-                // Перевод в обратную польскую запись.
-                var queue = new Queue<string>(ToRPN(expression));
-
-                if (queue.Count == 1)
-                    return double.Parse(queue.First(), CultureInfo.GetCultureInfo("Ru-ru"));
-
-                // Берем из очереди первый символ.
-                string s = queue.Dequeue();
-                var stack = new Stack<string>();
-                while (queue.Count >= 0)
+                foreach (var c in Separate(expression))
                 {
-                    if (!operators.Contains(s))
-                    {
-                        // Если символ не является операцией, то добавляем его в стек.
-                        stack.Push(s);
-                        // Берем следующий символ из очереди.
-                        s = queue.Dequeue();
-                    }
-                    else
-                    {
-                        // Если символ является операцией, то выполняем ее над
-                        // двумя последними числами из стека.
-                        var ans = 0.0;
-                        var x = double.Parse(stack.Pop(), CultureInfo.GetCultureInfo("Ru-ru"));
-                        var y = double.Parse(stack.Pop(), CultureInfo.GetCultureInfo("Ru-ru"));
-                        switch (s)
-                        {
-                            case "+":
-                                {
-                                    ans = x + y;
-                                    break;
-                                }
-                            case "-":
-                                {
-                                    ans = y - x;
-                                    break;
-                                }
-                            case "*":
-                                {
-                                    ans = y * x;
-                                    break;
-                                }
-                            case "/":
-                                {
-                                    ans = y / x;
-                                    break;
-                                }
-                        }
-                        // Возвращаем результат в стек.
-                        stack.Push(ans.ToString());
-
-                        // Берем следующий символ из очереди.
-                        if (queue.Count > 0)
-                            s = queue.Dequeue();
-                        else
-                            break;
-                    }
-
+                    if (c == "cos" || c == "sin" || c == "tg" || c == "ctg")
+                        continue;
+                    if (c == "+" || c == "-" || c == "*" || c == "/" || c == "(" || c == ")" || c == " ")
+                        continue;
+                    double.Parse(c, CultureInfo.GetCultureInfo("Ru-ru"));
                 }
-
-                // Возвращаем результат.
-                return double.Parse(stack.Pop(), CultureInfo.GetCultureInfo("Ru-ru"));
             }
             catch
             {
-                // Если есть ошибки, то возвращаем ноль.
-                try
-                {
-                    return double.Parse(expression, CultureInfo.GetCultureInfo("Ru-ru"));
-                }
-                catch
-                {
-                    return 0;
-                }
+                return new BadExpressionException();
             }
+
+            return null;
+        }
+
+        public static double Compute(string expression)
+        {
+            // Перевод в обратную польскую запись.
+            var queue = new Queue<string>(ToRPN(expression));
+
+            if (queue.Count == 1)
+                return double.Parse(queue.First(), CultureInfo.GetCultureInfo("Ru-ru"));
+
+            // Берем из очереди первый символ.
+            string s = queue.Dequeue();
+            var stack = new Stack<string>();
+            while (queue.Count >= 0)
+            {
+                if (!operators.Contains(s))
+                {
+                    // Если символ не является операцией, то добавляем его в стек.
+                    stack.Push(s);
+                    // Берем следующий символ из очереди.
+                    s = queue.Dequeue();
+                }
+                else
+                {
+                    // Если символ является операцией, то выполняем ее над
+                    // двумя последними числами из стека.
+                    var ans = 0.0;
+                    var x = double.Parse(stack.Pop(), CultureInfo.GetCultureInfo("Ru-ru"));
+                    var y = double.Parse(stack.Pop(), CultureInfo.GetCultureInfo("Ru-ru"));
+                    switch (s)
+                    {
+                        case "+":
+                            {
+                                ans = x + y;
+                                break;
+                            }
+                        case "-":
+                            {
+                                ans = y - x;
+                                break;
+                            }
+                        case "*":
+                            {
+                                ans = y * x;
+                                break;
+                            }
+                        case "/":
+                            {
+                                ans = y / x;
+                                break;
+                            }
+                    }
+                    // Возвращаем результат в стек.
+                    stack.Push(ans.ToString());
+
+                    // Берем следующий символ из очереди.
+                    if (queue.Count > 0)
+                        s = queue.Dequeue();
+                    else
+                        break;
+                }
+
+            }
+
+            // Возвращаем результат.
+            return double.Parse(stack.Pop(), CultureInfo.GetCultureInfo("Ru-ru"));
         }
 
         private static IEnumerable<string> ToRPN(string expression)
@@ -276,6 +308,39 @@ namespace Test2.Compute
                     return 2;
                 default:
                     return 3;
+            }
+        }
+    }
+
+    public class BadBracketsException : Exception
+    {
+        public override string Message
+        {
+            get
+            {
+                return "Нарушен баланс скобок";
+            }
+        }
+    }
+
+    public class BadOperationsException : Exception
+    {
+        public override string Message
+        {
+            get
+            {
+                return "Неправильный ввод операции";
+            }
+        }
+    }
+
+    public class BadExpressionException : Exception
+    {
+        public override string Message
+        {
+            get
+            {
+                return "Выражение введено неверно";
             }
         }
     }
