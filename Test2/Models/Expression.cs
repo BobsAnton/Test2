@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Globalization;
 
 namespace Test2.Models
 {
@@ -9,13 +10,16 @@ namespace Test2.Models
     {
         private static List<string> operators = new List<string>(new string[] { "(", ")", "+", "-", "*", "/" });
 
-        public static int Compute(string expression)
+        public static double Compute(string expression)
         {
             try
             {
                 // Перевод в обратную польскую запись.
                 var queue = new Queue<string>(ToRPN(expression));
                 
+                if (queue.Count == 1)
+                    return double.Parse(queue.First(), CultureInfo.GetCultureInfo("Ru-ru"));
+
                 // Берем из очереди первый символ.
                 string s = queue.Dequeue();
                 var stack = new Stack<string>();
@@ -32,9 +36,9 @@ namespace Test2.Models
                     {
                         // Если символ является операцией, то выполняем ее над
                         // двумя последними числами из стека.
-                        var ans = 0;
-                        var x = int.Parse(stack.Pop());
-                        var y = int.Parse(stack.Pop());
+                        var ans = 0.0;
+                        var x = double.Parse(stack.Pop(), CultureInfo.GetCultureInfo("Ru-ru"));
+                        var y = double.Parse(stack.Pop(), CultureInfo.GetCultureInfo("Ru-ru"));
                         switch (s)
                         {
                             case "+":
@@ -71,14 +75,14 @@ namespace Test2.Models
                 }
 
                 // Возвращаем результат.
-                return int.Parse(stack.Pop());
+                return double.Parse(stack.Pop(), CultureInfo.GetCultureInfo("Ru-ru"));
             }
             catch
             {
                 // Если есть ошибки, то возвращаем ноль.
                 try
                 {
-                    return int.Parse(expression);
+                    return double.Parse(expression, CultureInfo.GetCultureInfo("Ru-ru"));
                 }
                 catch
                 {
@@ -102,6 +106,7 @@ namespace Test2.Models
             {
                 if (c == " ")
                     continue;
+
                 if (operators.Contains(c))
                 {
                     if (stack.Count > 0 && !c.Equals("("))
@@ -172,12 +177,87 @@ namespace Test2.Models
                     if (Char.IsDigit(expression[i]))
                         for (var j = i + 1; j < expression.Length && Char.IsDigit(expression[j]); j++)
                             s += expression[j];
+                    else
+                        for (var j = i + 1; j < expression.Length && !operators.Contains(expression[j].ToString()); j++)
+                        {         
+                            s += expression[j];
+                            if (j != expression.Length - 1 && expression[j + 1] == '(')
+                            {
+
+                                while (!(expression[j] == ')' && expression[j + 1] != ')'))
+                                {
+                                    j++;
+                                    s += expression[j];
+                                    if (j == expression.Length - 1)
+                                        break;
+                                }
+                                break;
+                            }                              
+                        }              
                 }
-                // Возвращаем текущую часть строки.
-                yield return s;
+
                 // Передвигаем позицию в строке.
                 i += s.Length;
+
+                if (s != " " && s.Length != 0 && Char.IsLetter(s.Trim()[0]))
+                    s = ComputeTrigFunc(s);             
+
+                // Возвращаем текущую часть строки.
+                yield return s;
+
             }
+        }
+
+        private static string ComputeTrigFunc(string s)
+        {
+            if (s.ToLower().Contains("cos"))
+            {
+                s = s.Trim().Remove(0, 3);
+                if (s.Length > 2 && s[0] == '(' && s[s.Length - 1] == ')')
+                    s = s.Substring(1, s.Length - 2);
+                    
+                double result = Compute(s);
+                return string.Format(CultureInfo.GetCultureInfo("Ru-ru"), "{0:0.##}", Math.Cos(result));
+            }
+
+            if (s.ToLower().Contains("sin"))
+            {
+                s = s.Trim().Remove(0, 3);
+                if (s.Length > 2 && s[0] == '(' && s[s.Length - 1] == ')')
+                    s = s.Substring(1, s.Length - 2);
+
+                double result = Compute(s);
+                return string.Format(CultureInfo.GetCultureInfo("Ru-ru"), "{0:0.##}", Math.Sin(result));
+            }
+
+            if (s.ToLower().Contains("ctg"))
+            {
+                s = s.Trim().Remove(0, 3);
+                if (s.Length > 2 && s[0] == '(' && s[s.Length - 1] == ')')
+                    s = s.Substring(1, s.Length - 2);
+
+                double result = Compute(s);
+                result = Math.Tan(result);
+                if (result != 0)
+                    return string.Format(CultureInfo.GetCultureInfo("Ru-ru"), "{0:0.##}", (1 / result));
+                else
+                    return string.Format(CultureInfo.GetCultureInfo("Ru-ru"), "{0:0.##}", double.PositiveInfinity);
+            }
+
+            if (s.ToLower().Contains("tg"))
+            {
+                s = s.Trim().Remove(0, 2);
+                if (s.Length > 2 && s[0] == '(' && s[s.Length - 1] == ')')
+                    s = s.Substring(1, s.Length - 2);
+
+                double result = Compute(s);
+                return string.Format(CultureInfo.GetCultureInfo("Ru-ru"), "{0:0.##}", Math.Tan(result));
+            }
+
+            if (s.ToLower().Contains("pi"))
+                return string.Format(CultureInfo.GetCultureInfo("Ru-ru"), "{0:0.##}", Math.PI);
+
+            return s;
         }
 
         private static byte Priority(string s)      

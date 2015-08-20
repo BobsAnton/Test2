@@ -14,7 +14,7 @@ namespace Test2.Tests
             // Тестирование метода Compute контроллера Home.
             HomeController controller = new HomeController();
             ViewResult result = controller.Compute("(2+3)*2+4/2");
-            Assert.AreEqual(12, result.Model); 
+            Assert.AreEqual((double)12, result.Model); 
         }
 
         [TestMethod]
@@ -22,7 +22,7 @@ namespace Test2.Tests
         {
             HomeController controller = new HomeController();
             ViewResult result = controller.Compute("2 + 3");
-            Assert.AreEqual(5, result.Model); 
+            Assert.AreEqual((double)5, result.Model); 
         }
 
         [TestMethod]
@@ -30,7 +30,7 @@ namespace Test2.Tests
         {
             HomeController controller = new HomeController();
             ViewResult result = controller.Compute("-2+300");
-            Assert.AreEqual(298, result.Model); 
+            Assert.AreEqual((double)298, result.Model); 
         }
 
         [TestMethod]

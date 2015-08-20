@@ -12,7 +12,7 @@ namespace Test2.Controllers
         [HttpGet]
         public ViewResult Compute(string x = "0")
         {
-            int result = Expression.Compute(x);
+            double result = Expression.Compute(x);
             return View(result);
         }
     }
